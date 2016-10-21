@@ -4,6 +4,7 @@ Script de Instalação do Bacula e Ferramentas Auxiliares
 Pré-requisitos
 --------------
  Instalação básica do OS com GUI(opcional) para utilização do BAT (bacula administration tools)    
+ Partição primaria /backup com espaço suficiente para armazenamento dos volumes de backup
  Terminal logado como root   
  Acesso a internet no terminal de execução   
  
@@ -48,12 +49,16 @@ Sistemas Operacionais Homologados
  - Altera parâmetro de segurança(md5) no pg_hba.conf do PostgreSQL
 
 
-2. (Fase de Testes) Instalação do Cliente
+2. Instalação Apenas do Cliente
 ---------------------------------------------------------------
+Esta opção deverá ser utilizada apenas para instalação do cliente não executá-la na servidor de backup bacula(Director)
 
 
 3. Instalação do Webmin
 --------------------------------
+Webmin é uma interface web para administração do seu servidor ,por exemplo: Você pode configurar contas de usuário, configurar um Servidor Apache, um Servidor de DNS, compartilhamento de arquivos com Samba, entres outros serviços. O Webmin remove a necessidade de editar manualmente arquivos de configuração.
+Neste caso o Webmin ira ser utilizado para configurar graficamente o Bacula
+
 - Realiza o Download do pacote webmin
 - Instala dependências para integração do webmin e bacula
 - Instala o webmin
@@ -62,6 +67,8 @@ Sistemas Operacionais Homologados
 
 4. Instalação do Webacula
 ----------------------------------
+Webacula  Web + Bacula - web interface para o sistema de backup Bacula.
+
 - Instala um Fork do Webacula(Wnaderlei Huttel)
 - Realiza o Download do Webacula
 - Instala ambiente web e dependências
