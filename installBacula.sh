@@ -5,7 +5,7 @@
 # Data: 02/10/2016                                                           #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
 # Versão: 1.0                                                                #
-# OS: Testado e homologado Oracle Linux 7.1                                  #
+# OS: Testado e homologado Oracle Linux 7.1, CentOS 7                        #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
 # Não retire os devidos créditos                                             #
@@ -39,8 +39,8 @@ menuPrincipal ()
 {
  
 	menuPrincipal=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --menu "Escolha uma opção na lista abaixo" --fb 15 50 6\
-	"1" "Instalação do Bacula " \
-	"2" "(Fase de Testes) Instalação Apenas do Cliente " \
+	"1" "Instalação do Servidor Bacula " \
+	"2" "Instalação Apenas do Cliente " \
 	"3" "Instalação do Webmin" \
 	"4" "Instalação do Webacula" \
 	"5" "Limpar cache de Downloads" \
@@ -70,7 +70,10 @@ verificaPostgresql ()
 		   postgresql-setup initdb
 		   sleep 5
 	fi
-
+	
+	#Habilitar e inicializar o posgresql com o sistema
+	systemctl start postgresql.service
+	systemctl enable postgresql.service
 
 }
 
@@ -134,7 +137,7 @@ installDependencias ()
 
 	clear 
 
-	echo "Passo 02..."
+	echo "Realizando Download  Repositório Epel"
 	sleep 1
 
 	wget -P /usr/src http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
@@ -152,41 +155,10 @@ installDependencias ()
 
 }
 
-installBacula ()
+
+DBTables()
 {
-	
-	clear 
-
-	echo "Passo 03..."
-	sleep 1
-
-	#desabilitar o selinux
-	sed -i 's/^SELINUX=enforcing.*/SELINUX=disabled/' /etc/selinux/config
-	setenforce 0
-
-	#Habilitar e inicializar o posgresql com o sistema
-
-	systemctl start postgresql.service
-	systemctl enable postgresql.service
-
-	# Efetuar o download do source do bacula e preparar para instalação
-	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
-	verificaDown /usr/src/bacula-7.4.4.tar.gz
-	tar -xvzf /usr/src/bacula-7.4.4.tar.gz -C /usr/src/
-	cd /usr/src/bacula-7.4.4/
-
-	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
-	export PATH=/usr/lib64/qt4/bin/:$PATH
-
-
 	senhaPostgres=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário Postgres " --fb 10 50 3>&1 1>&2 2>&3) 
-
-	#configurar, compilar, instalar e habilitar na inicialização
-	./configure --enable-bat --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-postgresql --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=postgres --with-db-password=$senhaPostgres --with-openssl
-	  make 
-	  make install
-	  make install-autostart
-
 	# baixar a segurança do postgres será elevada posteriormente
 	sed  -i '/local/ s/peer/trust/g' /var/lib/pgsql/data/pg_hba.conf
 	systemctl restart postgresql.service
@@ -204,6 +176,54 @@ installBacula ()
 	sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
 	sed  -i '/host/ s/ident/md5/g' /var/lib/pgsql/data/pg_hba.conf
 	systemctl restart postgresql.service
+}
+
+installBacula ()
+{
+	clear 
+
+	echo "Desabilitando SELinux"
+	sleep 1
+
+	#desabilitar o selinux
+	sed -i 's/^SELINUX=enforcing.*/SELINUX=disabled/' /etc/selinux/config
+	setenforce 0
+
+	echo "Efetuando Download Bacula"
+	sleep 1
+
+	# Efetuar o download do source do bacula e preparar para instalação
+	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
+	verificaDown /usr/src/bacula-7.4.4.tar.gz
+	tar -xvzf /usr/src/bacula-7.4.4.tar.gz -C /usr/src/
+	cd /usr/src/bacula-7.4.4/
+
+	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
+	export PATH=/usr/lib64/qt4/bin/:$PATH
+
+	clear 
+	echo "Configurando o Bacula"
+	sleep 1
+	#configurar, compilar, instalar e habilitar na inicialização
+	./configure --enable-bat --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-postgresql --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=postgres --with-db-password=$senhaPostgres --with-openssl
+	
+	clear 
+	echo "Compilando o Bacula"
+	sleep 1
+	make 
+
+	clear 
+	echo "Instalando o Bacula"
+	sleep 1	
+	make install
+
+	clear 
+	echo "Configurando o Bacula para inicializar junto com o Sistema"
+	sleep 1
+	make install-autostart
+
+	#preparando DB, Tables e Privilegios
+	DBTables	
 
 	#Liberando o uso do bacula no firewall
 	firewall-cmd --permanent --zone=public --add-service=bacula-client
@@ -211,7 +231,6 @@ installBacula ()
 
 	#reiniciando todos os serviços
 	systemctl restart firewalld.service
-	systemctl restart postgresql.service
 
 	#Iniciando os serviços de bacula
 	systemctl start bacula-dir.service
@@ -238,6 +257,10 @@ installBacula ()
 
 installWebmin()
 {
+	clear
+	echo "Instalando Webmin"
+	sleep 2
+	
 	wget -P /usr/src http://prdownloads.sourceforge.net/webadmin/webmin-1.810-1.noarch.rpm
 	verificaDown /usr/src/webmin-1.810-1.noarch.rpm
 	killall yum
@@ -252,7 +275,7 @@ installWebmin()
 
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
    Webmin foi instalado com sucesso!		
-   Para acessá-lo utilize o navegador 
+   Para acessá-lo utilize no navegador 
    url: https://$ipserver:10000
 
 	"  --fb 15 50
@@ -261,7 +284,9 @@ installWebmin()
 installWebacula()
 {
 	killall yum
+	clear
 	echo "instalado webacula"
+	sleep 2
 
 	yum install -y httpd php php-pgsql php-gd php-pear php-bcmath php-mbstring
 	systemctl start httpd.service
@@ -334,7 +359,7 @@ installClient ()
 
 	clear 
 
-	echo "Passo 03..."
+	echo "Instalação do Cliente"
 	sleep 1
 
 	#desabilitar o selinux
@@ -352,14 +377,33 @@ installClient ()
 	  make install
 	  make install-autostart
 
+	nomeDirector=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox  "Informe o nome do seu director: bacula-dir? " --fb 10 50 3>&1 1>&2 2>&3)
+	hostname=$(hostname)
+	sed -i "s/$hostname-dir/$nomeDirector/" /root/Downloads/installBacula-master/bacula-fd.conf
+
+	senhaClient=$(grep -m 1 "Password" /root/Downloads/installBacula-master/bacula-fd.conf)
+
+	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "Adicione este cliente ao seu arquivo /etc/bacula/bacula-dir.conf do seu Servidor de Backup Director
+
+Client {
+ Name = $hostname-fd
+ Address = $ipserver 
+ FDPort = 9102
+ Catalog = MyCatalog
+ $senhaClient # SENHA DO CLIENTE
+ File Retention = 30 days # 30 days
+ Job Retention = 6 months # six months
+ AutoPrune = yes # Prune expired Jobs/Files
+}" --fb 22 70
+
 	#Liberando o uso do bacula no firewall
 	firewall-cmd --permanent --zone=public --add-service=bacula-client
 	firewall-cmd --permanent --zone=public --add-service=bacula
 
 	#reiniciando todos os serviços
 	systemctl restart firewalld.service
-	systemctl restart bacula-fd.service
 	systemctl enable bacula-fd.service
+	systemctl restart bacula-fd.service
 }
 
 
