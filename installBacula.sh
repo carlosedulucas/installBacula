@@ -86,7 +86,7 @@ verificaDown()
 	else
 		whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
 			Ocorreu algum problema e o download do $1 não foi realizado
-		" --fb 10 60
+		" --fb 15 70
 		kill $$
 	fi
 }
