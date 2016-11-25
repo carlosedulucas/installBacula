@@ -4,7 +4,7 @@
 # Autor: Carlosedulucas	/ Carlos Eduardo Lucas                               #
 # Data: 02/10/2016                                                           #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
-# Versão: 1.0                                                                #
+# Versão: 1.1                                                                #
 # OS: Testado e homologado Oracle Linux 7.1, CentOS 7                        #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
@@ -38,13 +38,14 @@ reqsToUse ()
 menuPrincipal ()
 {
  
-	menuPrincipal=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --menu "Escolha uma opção na lista abaixo" --fb 15 50 6\
+	menuPrincipal=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --menu "Escolha uma opção na lista abaixo" --fb 23 60 7\
 	"1" "Instalação do Servidor Bacula " \
 	"2" "Instalação Apenas do Cliente " \
 	"3" "Instalação do Webmin" \
 	"4" "Instalação do Webacula" \
-	"5" "Limpar cache de Downloads" \
-	"6" "Exit" 3>&1 1>&2 2>&3)
+	"5" "Instalação Bacula-Web" \
+	"6" "Limpar cache de Downloads" \
+	"7" "Exit" 3>&1 1>&2 2>&3)
 	 
 	status=$?
 
@@ -126,6 +127,7 @@ limparCacheDownloads()
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
+	rm -fr /usr/src/usr/src/bacula-web-latest*
 
 	echo "Cache limpo ..."
 	sleep 5
@@ -162,12 +164,6 @@ DBTables()
 	# baixar a segurança do postgres será elevada posteriormente
 	sed  -i '/local/ s/peer/trust/g' /var/lib/pgsql/data/pg_hba.conf
 	systemctl restart postgresql.service
-
-	#criar o BD e popular suas informações
-	chmod 775 -R /etc/bacula
-	/etc/bacula/./create_bacula_database
-	/etc/bacula/./make_bacula_tables
-	/etc/bacula/./grant_bacula_privileges
 
 	#criando uma senha para o usuário postgres
 	psql -U postgres -c "alter user postgres with encrypted password '$senhaPostgres';"
@@ -253,6 +249,11 @@ installBacula ()
 	   installWebacula
 	fi
 
+	if whiptail --title "Bacula-Web" --yesno "Deseja instalar o Bacula-Web." 10 50
+	then
+	   installBaculaWeb
+	fi
+
 }
 
 installWebmin()
@@ -281,16 +282,24 @@ installWebmin()
 	"  --fb 15 50
 }
 
+installHttp()
+{
+	killall yum	
+	yum install -y httpd php php-pgsql php-gd php-pear php-bcmath php-mbstring php-gettext php-pdo
+	systemctl start httpd.service
+	systemctl enable httpd.service
+	firewall-cmd --permanent --zone=public --add-service=http
+	systemctl restart firewalld.service
+}
+
 installWebacula()
 {
-	killall yum
+	
 	clear
 	echo "instalado webacula"
 	sleep 2
 
-	yum install -y httpd php php-pgsql php-gd php-pear php-bcmath php-mbstring
-	systemctl start httpd.service
-	systemctl enable httpd.service
+	installHttp
 	
 	wget -P /usr/src https://github.com/wanderleihuttel/webacula/archive/master.zip
 	verificaDown /usr/src/master.zip
@@ -308,6 +317,12 @@ installWebacula()
 	
 	sed  -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
 	systemctl restart postgresql.service
+
+	#criar o BD e popular suas informações
+	chmod 775 -R /etc/bacula
+	/etc/bacula/./create_bacula_database
+	/etc/bacula/./make_bacula_tables
+	/etc/bacula/./grant_bacula_privileges
 
 	cd /var/www/html/webacula/install/PostgreSql/
 
@@ -339,8 +354,7 @@ installWebacula()
   	systemctl restart httpd.service
 	chown -R apache:apache /var/www/html/
 		
-	firewall-cmd --permanent --zone=public --add-service=http
-	systemctl restart firewalld.service
+	
 	
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
   Webacula foi instalado com sucesso!
@@ -353,6 +367,66 @@ installWebacula()
 	"  --fb 20 50	
 	
 }
+
+
+installBaculaWeb()
+{
+
+	clear
+	echo "instalado Bacula-Web"
+	sleep 2
+
+	installHttp
+	
+	
+	wget -P /usr/src http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz
+	verificaDown /usr/src/bacula-web-latest.tgz
+	mkdir -v /var/www/html/bacula-web
+	tar -xzf /usr/src/bacula-web-latest.tgz -C /var/www/html/bacula-web
+	chown -Rv apache: /var/www/html/bacula-web
+	sleep 5
+	
+
+cd /var/www/html/bacula-web/application/config/
+cp -v config.php.sample config.php
+chown -v apache: config.php
+
+senhaPostgres=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário Postgres " --fb 10 50 3>&1 1>&2 2>&3) 
+labelServer=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox "Informe o nome da Configuração " --fb 10 50 3>&1 1>&2 2>&3) 
+sed -i  '/config\[0\]/d' /var/www/html/bacula-web/application/config/config.php
+sed  -i "/language/ s/en_US/pt_BR/g" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['label'] = '$labelServer';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['host'] = 'localhost';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['login'] = 'postgres';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['password'] = '$senhaPostgres';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_name'] = 'bacula';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_type'] = 'pgsql';" /var/www/html/bacula-web/application/config/config.php
+sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_port'] = '5432';" /var/www/html/bacula-web/application/config/config.php
+
+	
+echo "
+<Directory /var/www/html/bacula-web>
+  AllowOverride All
+</Directory>
+" >> /etc/httpd/conf.d/bacula-web.conf
+
+systemctl restart httpd.service
+
+
+	
+	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
+  Bacula-Web foi instalado com sucesso!
+  Para acessá-lo utilize o navegador 
+  url: http://$ipserver/bacula-
+
+	"  --fb 20 50	
+	
+}
+
+
+
+
+
 
 installClient ()
 {
@@ -423,6 +497,7 @@ infoFinal ()
   - BAT (Bacula Administration Tool) caso seu servidor possua interface gráfica
   - Fork Webacula ( Wanderlei Huttel)  - https://github.com/wanderleihuttel/webacula
   - Webmin 
+  - Bacula-web
 ---------------------------------------------------------	
   Webacula 
 	Url: http://$ipserver/webacula
@@ -436,7 +511,11 @@ infoFinal ()
 	Acessar -> System -> Bacula Backup System-> module configuration -> 
 	User to login to database as : postgres
 	Password to login with: senha do postgres
----------------------------------------------------------			
+---------------------------------------------------------		
+  Bacula-web
+	Url: http://$ipserver/bacula=web
+	
+---------------------------------------------------------		
 
 	Obrigado!
 
@@ -489,12 +568,18 @@ case $menuPrincipal in
 	;;
 	
 	5)
+		installBaculaWeb
+		infoFinal
+		menuPrincipal
+	;;
+	
+	6)
 		limparCacheDownloads		
 		infoFinal
 		kill $$
 	;;
 
-	6)
+	7)
 		infoFinal
 		kill $$
 	;;
