@@ -66,7 +66,7 @@ verificaPostgresql ()
 		   echo "instalado"
 		   sleep 5
 	else
-		   killall yum
+		   killall -9 yum
 		   yum install -y postgresql postgresql-server
 		   postgresql-setup initdb
 		   sleep 5
@@ -149,7 +149,7 @@ installDependencias ()
 
 	echo "Instalando Pacotes ..."
 	sleep 1
-	killall yum
+	killall -9 yum
 	yum -y install openssl-devel gcc-c++ readline readline-devel lzo
 	yum -y install libpqxx-devel
 	yum -y install qt4  qt4-devel  qwt qwt-devel
@@ -219,7 +219,28 @@ installBacula ()
 	make install-autostart
 
 	#preparando DB, Tables e Privilegios
-	DBTables	
+	DBTables
+	
+	sed  -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
+	systemctl restart postgresql.service
+
+	#criar o BD e popular suas informações
+	chmod 775 -R /etc/bacula
+	clear 
+	echo "criando DataBase Bacula"
+	sleep 1	
+	/etc/bacula/./create_bacula_database
+	clear 
+	echo "criando Tabelas Bacula"
+	sleep 1	
+	/etc/bacula/./make_bacula_tables
+	clear 
+	echo "Permissões DB"
+	sleep 1	
+	/etc/bacula/./grant_bacula_privileges	
+	
+	sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
+	systemctl restart postgresql.service
 
 	#Liberando o uso do bacula no firewall
 	firewall-cmd --permanent --zone=public --add-service=bacula-client
@@ -264,7 +285,7 @@ installWebmin()
 	
 	wget -P /usr/src http://prdownloads.sourceforge.net/webadmin/webmin-1.810-1.noarch.rpm
 	verificaDown /usr/src/webmin-1.810-1.noarch.rpm
-	killall yum
+	killall -9 yum
 	yum install -y perl-DBD-Pg  perl perl-Net-SSLeay openssl perl-IO-Tty
 	rpm -ivh /usr/src/webmin-1.810-1.noarch.rpm
 	systemctl start webmin
@@ -284,8 +305,13 @@ installWebmin()
 
 installHttp()
 {
-	killall yum	
-	yum install -y httpd php php-pgsql php-gd php-pear php-bcmath php-mbstring php-gettext php-pdo
+	killall -9 yum	
+	clear
+	echo "Instalando Http e PHP"
+	sleep 2
+	
+	yum install -y httpd php php-pgsql php-gd php-pear php-gettext php-pdo
+	yum --enablerepo=ol7_optional_latest install -y php-mbstring php-bcmath
 	systemctl start httpd.service
 	systemctl enable httpd.service
 	firewall-cmd --permanent --zone=public --add-service=http
@@ -318,11 +344,7 @@ installWebacula()
 	sed  -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
 	systemctl restart postgresql.service
 
-	#criar o BD e popular suas informações
-	chmod 775 -R /etc/bacula
-	/etc/bacula/./create_bacula_database
-	/etc/bacula/./make_bacula_tables
-	/etc/bacula/./grant_bacula_privileges
+
 
 	cd /var/www/html/webacula/install/PostgreSql/
 
@@ -387,37 +409,37 @@ installBaculaWeb()
 	sleep 5
 	
 
-cd /var/www/html/bacula-web/application/config/
-cp -v config.php.sample config.php
-chown -v apache: config.php
+	cd /var/www/html/bacula-web/application/config/
+	cp -v config.php.sample config.php
+	chown -v apache: config.php
 
-senhaPostgres=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário Postgres " --fb 10 50 3>&1 1>&2 2>&3) 
-labelServer=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox "Informe o nome da Configuração " --fb 10 50 3>&1 1>&2 2>&3) 
-sed -i  '/config\[0\]/d' /var/www/html/bacula-web/application/config/config.php
-sed  -i "/language/ s/en_US/pt_BR/g" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['label'] = '$labelServer';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['host'] = 'localhost';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['login'] = 'postgres';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['password'] = '$senhaPostgres';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_name'] = 'bacula';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_type'] = 'pgsql';" /var/www/html/bacula-web/application/config/config.php
-sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_port'] = '5432';" /var/www/html/bacula-web/application/config/config.php
+	senhaPostgres=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário Postgres " --fb 10 50 3>&1 1>&2 2>&3) 
+	labelServer=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox "Informe o nome da Configuração " --fb 10 50 3>&1 1>&2 2>&3) 
+	sed -i  '/config\[0\]/d' /var/www/html/bacula-web/application/config/config.php
+	sed  -i "/language/ s/en_US/pt_BR/g" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['label'] = '$labelServer';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['host'] = 'localhost';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['login'] = 'postgres';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['password'] = '$senhaPostgres';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_name'] = 'bacula';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_type'] = 'pgsql';" /var/www/html/bacula-web/application/config/config.php
+	sed -i "/PostgreSQL bacula catalog/a \$config[0]['db_port'] = '5432';" /var/www/html/bacula-web/application/config/config.php
 
 	
-echo "
-<Directory /var/www/html/bacula-web>
-  AllowOverride All
-</Directory>
-" >> /etc/httpd/conf.d/bacula-web.conf
+	echo "
+	<Directory /var/www/html/bacula-web>
+	  AllowOverride All
+	</Directory>
+	" >> /etc/httpd/conf.d/bacula-web.conf
 
-systemctl restart httpd.service
+	systemctl restart httpd.service
 
 
 	
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
   Bacula-Web foi instalado com sucesso!
   Para acessá-lo utilize o navegador 
-  url: http://$ipserver/bacula-
+  url: http://$ipserver/bacula-Web
 
 	"  --fb 20 50	
 	
