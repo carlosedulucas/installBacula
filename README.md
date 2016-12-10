@@ -27,7 +27,7 @@ Sistemas Operacionais Homologados
  - Oracle Linux 7.1
  - CentOS 7
 
-1. Instalação do Bacula
+1. Instalação do Servidor Bacula
 ------------------------------
 
  - Instala dependências
@@ -76,6 +76,40 @@ Webacula  Web + Bacula - web interface para o sistema de backup Bacula.
 - Prepara o serviço httpd para inicializar junto ao OS
 - Libera execução do httpd no Firewall
 
-5. Limpar cache de Downloads
+5. Instalação do Bacula-Web
+----------------------------------
+Bacula-Web é uma ferramenta baseada na Web de relatórios e monitoramento que fornece informações úteis sobre a sua infraestrutura Bacula como jobs, pools, volumes, logs de tarefas, clientes e relatórios de jobs de backup e muito mais ...
+Bacula-Web é livre (como um pássaro) e liberado sob o termo da licença GPL v 2.0.
+
+- Realiza o Download do Bacula-Web
+- Instala ambiente web e dependências
+- Realiza configurações nos arquivos 
+- Prepara o serviço httpd para inicializar junto ao OS
+- Libera execução do httpd no Firewall
+
+6. Instalação do Baculum(Bacula-GUI)
+----------------------------------
+Baculum é uma interface Bacula baseada na Web, que permite várias funções de administração Bacula.
+
+Esses incluem:
+
+      Execução de trabalhos Bacula (backup, restore, verify ...)
+      Monitor Bacula serviços
+      Console Bacula disponível via interface web
+      Suporte para consoles personalizados e restritos (funcionalidade ACL da console)
+      Gestão de volumes incluindo a rotulagem de novos volumes
+      Gráficos de fácil utilização Operações básicas do daemon de armazenamento em volumes (montagem, desmontagem, ações de liberação)
+      Assistente de configuração e restauração fácil de usar
+
+
+- Realiza o Download do Baculum(Bacula-GUI)
+- Instala ambiente web e dependências
+- Realiza configurações nos arquivos em sudoers, php.ini e host do Apache
+- Prepara o serviço httpd para inicializar junto ao OS
+- Libera execução do httpd no Firewall
+
+
+
+7. Limpar cache de Downloads
 ----------------------------------------
 Remove todos os downloads efetuados.
