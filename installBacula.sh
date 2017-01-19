@@ -15,9 +15,9 @@
 
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="07 de Outubro de  2016"
+dateVersion="18 de Janeiro de  2017"
 
-TITULO="installBacula.sh - v.1.2"
+TITULO="installBacula.sh - v.1.3"
 BANNER="https://github.com/carlosedulucas"
 
 contato=carlosedulucas9@gmail.com	
@@ -96,7 +96,9 @@ verificaPacote()
 {
 	#$1 /local/Pacote
 	#$2 url para download
-
+echo $1
+echo $2
+sleep 5
 	#Verifica se $1(pacote) existe
 	if [ -e $1 ] ; then
 		#Pergunta se deseja manter o pacote que já existe no disco ou 
@@ -174,7 +176,7 @@ installDependencias ()
 
 	echo "Realizando Download  Repositório Epel"
 	sleep 1
-	verificaPacote /usr/src/epel-release-7-8.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+	verificaPacote /usr/src/epel-release-7-9.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
 	rpm -ivh /usr/src/epel-release*
 	clear
 
@@ -205,7 +207,7 @@ installBacula ()
 
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	verificaPacote 	/usr/src/bacula-7.4.4.tar.gz /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
+	verificaPacote 	/usr/src/bacula-7.4.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
 	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
 	#verificaDown /usr/src/bacula-7.4.4.tar.gz
 	tar -xvzf /usr/src/bacula-7.4.4.tar.gz -C /usr/src/
@@ -288,6 +290,21 @@ installBacula ()
 	systemctl enable bacula-dir.service
 	systemctl enable bacula-sd.service
 	systemctl enable bacula-fd.service
+
+	#adicionar BAT no menu do sistema em outros
+	echo 
+"[Desktop Entry]
+Version=1.0
+Name=BAT (Bacula Administration Tools)
+GenericName=BAT
+Comment=BAT (Bacula Administration Tools)
+Exec=bat
+Icon=bacula
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Other
+" >> /usr/share/applications/bat.desktop
 
 	if whiptail --title "Webmin" --yesno "Deseja instalar o Webmin." 10 50
 	then
@@ -389,7 +406,7 @@ installBaculum()
 		Require valid-user
 	</Directory>
 	" >> /etc/httpd/conf.d/baculum.conf
-
+	systemctl restart httpd.service
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
   Baculum foi instalado com sucesso!
   Para acessá-lo utilize o navegador 
