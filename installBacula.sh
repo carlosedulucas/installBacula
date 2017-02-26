@@ -157,7 +157,7 @@ installWhiptail ()
 limparCacheDownloads()
 {
 	rm -fr /usr/src/webmin*
-	rm -fr /usr/src/bacula-7.4.4*
+	rm -fr /usr/src/bacula-7.4.5*
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
@@ -207,11 +207,11 @@ installBacula ()
 
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	verificaPacote 	/usr/src/bacula-7.4.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
-	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
-	#verificaDown /usr/src/bacula-7.4.4.tar.gz
-	tar -xvzf /usr/src/bacula-7.4.4.tar.gz -C /usr/src/
-	cd /usr/src/bacula-7.4.4/
+	verificaPacote 	/usr/src/bacula-7.4.5.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.5/bacula-7.4.5.tar.gz
+	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.5/bacula-7.4.5.tar.gz
+	#verificaDown /usr/src/bacula-7.4.5.tar.gz
+	tar -xvzf /usr/src/bacula-7.4.5.tar.gz -C /usr/src/
+	cd /usr/src/bacula-7.4.5/
 
 	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
 	export PATH=/usr/lib64/qt4/bin/:$PATH
@@ -380,12 +380,12 @@ installBaculum()
 
 	installHttp
 
-	verificaPacote /usr/src/bacula-gui-7.4.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-gui-7.4.4.tar.gz
+	verificaPacote /usr/src/bacula-gui-7.4.5.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.5/bacula-gui-7.4.5.tar.gz
 
-#	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-gui-7.4.4.tar.gz
-#	verificaDown /usr/src/bacula-gui-7.4.4.tar.gz
-	tar -xzvf /usr/src/bacula-gui-7.4.4.tar.gz  -C /usr/src/
-	cp -R /usr/src/bacula-gui-7.4.4/baculum/ /var/www/html/baculum
+#	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.5/bacula-gui-7.4.5.tar.gz
+#	verificaDown /usr/src/bacula-gui-7.4.5.tar.gz
+	tar -xzvf /usr/src/bacula-gui-7.4.5.tar.gz  -C /usr/src/
+	cp -R /usr/src/bacula-gui-7.4.5/baculum/ /var/www/html/baculum
 
 	echo "apache ALL= NOPASSWD: /usr/sbin/bconsole" >> /etc/sudoers
 
@@ -560,9 +560,9 @@ installClient ()
 	setenforce 0
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.4/bacula-7.4.4.tar.gz
-	tar -xvzf /usr/src/bacula-7.4.4.tar.gz -C /usr/src/
-	cd /usr/src/bacula-7.4.4/
+	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.5/bacula-7.4.5.tar.gz
+	tar -xvzf /usr/src/bacula-7.4.5.tar.gz -C /usr/src/
+	cd /usr/src/bacula-7.4.5/
 
 	#configurar, compilar, instalar e habilitar na inicialização
 	./configure --enable-client-only
@@ -610,7 +610,7 @@ infoFinal ()
   Download:  $BANNER
 
   Este Script realiza a instalação:
-  - Bacula-7.4.4
+  - Bacula-7.4.5
   - PostgreSQL
   - bconsole
   - BAT (Bacula Administration Tool) caso seu servidor possua interface gráfica
