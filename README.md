@@ -31,16 +31,15 @@ Sistemas Operacionais Homologados
 ------------------------------
 
  - Instala dependências
- - Verifica Instalação do PostgreSQL
+ - Verifica Instalação do PostgreSQL ou MySQL
 	- Instalado -> Continua
 	- Não Instalado
-		- Instala o PostgreSQL-Server
+		- Instala o PostgreSQL-Server ou MySQL
 		- Dependências
-		- Cria um novo PostgreSQL Database Cluster
-		- Atribui  uma senha para o usuário postgres
+		- Atribui  uma senha para o usuário do Banco de Dados
  - Instalação do Bacula
  - Desabilita o SELinux
- - Versão 7.4.4
+ - Versão 7.4.7
  - Compila
  - Instala
  - Cria DB bacula e atribui as permissões para o bacula no PostgreSQL
@@ -93,14 +92,15 @@ Baculum é uma interface Bacula baseada na Web, que permite várias funções de
 
 Esses incluem:
 
-      Execução de trabalhos Bacula (backup, restore, verify ...)
-      Monitor Bacula serviços
-      Console Bacula disponível via interface web
-      Suporte para consoles personalizados e restritos (funcionalidade ACL da console)
-      Gestão de volumes incluindo a rotulagem de novos volumes
-      Gráficos de fácil utilização Operações básicas do daemon de armazenamento em volumes (montagem, desmontagem, ações de liberação)
-      Assistente de configuração e restauração fácil de usar
+- Execução de trabalhos Bacula (backup, restore, verify ...)
+- Monitor Bacula serviços
+- Console Bacula disponível via interface web
+- Suporte para consoles personalizados e restritos (funcionalidade ACL da console)
+- Gestão de volumes incluindo a rotulagem de novos volumes
+- Gráficos de fácil utilização Operações básicas do daemon de armazenamento em volumes (montagem, desmontagem, ações de liberação)
+- Assistente de configuração e restauração fácil de usar
 
+Procedimentos
 
 - Realiza o Download do Baculum(Bacula-GUI)
 - Instala ambiente web e dependências
