@@ -118,16 +118,20 @@ verificaMySQL ()
 		   echo "instalado"
 		   sleep 5
 	else
+		   
+		   wget http://repo.mysql.com/mysql-community-release-el5-7.noarch.rpm
+		   sudo rpm -ivh mysql-community-release-el5-7.noarch.rpm
 		   killall -9 yumBackend.py
-		   yum enablerepo=ol7_MySQL56 install -y mysql mysql-server mysql-devel
+		   yum install -y mysql mysql-server mysql-devel
+
 		   
 		   sleep 5
 	fi
 	
 	#Habilitar e inicializar o posgresql com o sistema
-	systemctl start mysql.service
+	systemctl start mysqld.service
 	mysql_secure_installation
-	systemctl enable mysql.service
+	systemctl enable mysqld.service
 
 }
 
@@ -311,7 +315,7 @@ installBacula ()
 	fi
 
 	#configurar, compilar, instalar e habilitar na inicialização
-	./configure --enable-bat --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-$DB --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=$dbuser --with-db-password=$senhaBD --with-openssl --enable-client-only
+	./configure --enable-bat --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-$DB --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=$dbuser --with-db-password=$senhaBD --with-openssl --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula
 	sleep 10
 	
 	echo "Compilando o Bacula"
@@ -337,17 +341,17 @@ installBacula ()
 	clear 
 	echo "criando DataBase Bacula"
 	sleep 1
-	/etc/bacula/./create_bacula_database $parametrosDB
+	/etc/bacula/scripts/./create_bacula_database $parametrosDB
 
 	clear 
 	echo "criando Tabelas Bacula"
 	sleep 1	
-	/etc/bacula/./make_bacula_tables $parametrosDB
+	/etc/bacula/scripts/./make_bacula_tables $parametrosDB
 
 	clear 
 	echo "Permissões DB"
 	sleep 1	
-	/etc/bacula/./grant_bacula_privileges $parametrosDB
+	/etc/bacula/scripts/./grant_bacula_privileges $parametrosDB
 	
 	if [ "postgresql" = $DB ]
 	then
@@ -454,7 +458,7 @@ installHttp()
 	echo "Instalando Http e PHP"
 	sleep 2
 	
-	yum install -y httpd php php-pgsql php-gd php-pear php-gettext php-pdo php-xml php-common php-mysql
+	yum install -y httpd php php-pgsql php-gd php-pear php-gettext php-pdo php-xml php-common php-mysql php-mbstring php-bcmath
 	yum --enablerepo=ol7_optional_latest install -y php-mbstring php-bcmath
 	systemctl start httpd.service
 	systemctl enable httpd.service
@@ -510,7 +514,7 @@ installBaculum()
   url: http://$ipserver/baculum
   Dados Iniciais
   Usuário: admin
-  Senha: bacula
+  Senha: $senhaBaculum 
 
 	"  --fb 20 50	
 	
@@ -528,6 +532,7 @@ installWebacula()
 	verificaPacote /usr/src/master.zip https://github.com/wanderleihuttel/webacula/archive/master.zip
 	#wget -P /usr/src https://github.com/wanderleihuttel/webacula/archive/master.zip
 	#verificaDown /usr/src/master.zip
+	yum -y install unzip 
 	unzip /usr/src/master.zip -d /usr/src
 	cp -r /usr/src/webacula-master/ /var/www/html/webacula
 	chown apache:apache -R /var/www/html/
@@ -782,7 +787,7 @@ infoFinal ()
 # Script start
 
 clear
-
+yum -y install wget
 [ ! -e /usr/bin/whiptail ] && { installWhiptail; }
 
 selecionaBD
@@ -804,43 +809,36 @@ case $menuPrincipal in
 		#limparCacheDownloads		
 		installDependencias
 		installBacula
-		infoFinal
 		menuPrincipal
 		
 	;;
 	
 	3)
 		installClientE
-		infoFinal
 		menuPrincipal
 	;;
 		
 
 	4)
 		installWebmin
-		infoFinal
 		menuPrincipal
 	;;
 	
 	5)
 		installWebacula
-		infoFinal
 		menuPrincipal
 	;;
 	
 	6)
 		installBaculaWeb
-		infoFinal
 		menuPrincipal
 	;;
 	7)
 		installBaculum
-		infoFinal
 		menuPrincipal
 	;;	
 	8)
 		limparCacheDownloads		
-		infoFinal
 		kill $$
 	;;
 
