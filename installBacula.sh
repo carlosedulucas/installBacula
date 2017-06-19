@@ -25,7 +25,7 @@ contato=carlosedulucas9@gmail.com
 
 
 clear
-
+killall -9 yumBackend.py
 
 reqsToUse ()
 {
@@ -99,7 +99,7 @@ verificaPostgreSQL ()
 		   sleep 5
 	else
 		   killall -9 yumBackend.py
-		   yum install -y postgresql postgresql-server
+		   yum install -y postgresql postgresql-server php-pgsql
 		   postgresql-setup initdb
 		   sleep 5
 	fi
@@ -122,7 +122,7 @@ verificaMySQL ()
 		   wget http://repo.mysql.com/mysql-community-release-el5-7.noarch.rpm
 		   sudo rpm -ivh mysql-community-release-el5-7.noarch.rpm
 		   killall -9 yumBackend.py
-		   yum install -y mysql mysql-server mysql-devel
+		   yum install -y mysql mysql-server mysql-devel php-mysql
 
 		   
 		   sleep 5
@@ -315,7 +315,7 @@ installBacula ()
 	fi
 
 	#configurar, compilar, instalar e habilitar na inicialização
-	./configure --enable-bat --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-$DB --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=$dbuser --with-db-password=$senhaBD --with-openssl --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula
+	./configure --with-readline=/usr/include/readline --disable-conio --with-logdir=/var/log/bacula --enable-smartalloc --with-$DB --with-archivedir=/backup --with-hostname=$ipserver --with-db-user=$dbuser --with-db-password=$senhaBD --with-openssl --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula
 	sleep 10
 	
 	echo "Compilando o Bacula"
@@ -429,9 +429,11 @@ installWebmin()
 	
 	if [ "postgresql" = $DB ]
 	then
+		killall -9 yumBackend.py		
 		yum -y install perl-DBD-Pg 
 	elif [ "mysql" = $DB ]
 	then
+		killall -9 yumBackend.py
 		yum -y install perl-DBD-MySQL
 	fi
 
@@ -458,7 +460,7 @@ installHttp()
 	echo "Instalando Http e PHP"
 	sleep 2
 	
-	yum install -y httpd php php-pgsql php-gd php-pear php-gettext php-pdo php-xml php-common php-mysql php-mbstring php-bcmath
+	yum install -y httpd php  php-gd php-pear php-gettext php-pdo php-xml php-common  php-mbstring php-bcmath
 	yum --enablerepo=ol7_optional_latest install -y php-mbstring php-bcmath
 	systemctl start httpd.service
 	systemctl enable httpd.service
@@ -787,6 +789,7 @@ infoFinal ()
 # Script start
 
 clear
+killall -9 yumBackend.py
 yum -y install wget
 [ ! -e /usr/bin/whiptail ] && { installWhiptail; }
 
