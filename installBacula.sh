@@ -4,7 +4,7 @@
 # Autor: Carlosedulucas	/ Carlos Eduardo Lucas                               #
 # Data: 02/10/2016                                                           #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
-# Versão: 1.4                                                                #
+# Versão: 1.4.1                                                                #
 # OS: Testado e homologado Oracle Linux 7.1, CentOS 7                        #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
@@ -15,9 +15,9 @@
 
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="18 de Março de  2017"
+dateVersion="19 de Julho de  2017"
 
-TITULO="installBacula.sh - v.1.4"
+TITULO="installBacula.sh - v.1.4.1"
 BANNER="https://github.com/carlosedulucas"
 BD="Postgres" 
 
@@ -234,7 +234,7 @@ installDependencias ()
 
 	echo "Realizando Download  Repositório Epel"
 	sleep 1
-	verificaPacote /usr/src/epel-release-7-9.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
+	verificaPacote /usr/src/epel-release-7-10.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
 	rpm -ivh /usr/src/epel-release*
 	clear
 
