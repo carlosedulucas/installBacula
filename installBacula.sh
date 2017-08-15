@@ -689,6 +689,11 @@ installClient ()
 	sed -i 's/^SELINUX=enforcing.*/SELINUX=disabled/' /etc/selinux/config
 	setenforce 0
 
+	echo "Instalando Pacotes ..."
+	sleep 1
+	killall -9 yumBackend.py
+	yum -y install gcc-c++ lzo
+	
 	# Efetuar o download do source do bacula e preparar para instalação
 	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-7.4.7.tar.gz
 	tar -xvzf /usr/src/bacula-7.4.7.tar.gz -C /usr/src/
@@ -699,7 +704,8 @@ installClient ()
 	  make 
 	  make install
 	  make install-autostart
-
+	
+	
 	nomeDirector=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox  "Informe o nome do seu director: bacula-dir? " --fb 10 50 3>&1 1>&2 2>&3)
 	hostname=$(hostname)
 	sed -i "s/$hostname-dir/$nomeDirector/" /root/Downloads/installBacula-master/bacula-fd.conf
