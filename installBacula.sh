@@ -241,8 +241,8 @@ installDependencias ()
 	echo "Instalando Pacotes ..."
 	sleep 1
 	killall -9 yumBackend.py
-	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel
-	yum -y install libpqxx-devel
+	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel lzo-devel libacl-devel
+	yum -y install libpqxx-devell 
 	yum -y install qt4  qt4-devel  qwt qwt-devel
 	
 	if [ "postgresql" = $DB ]
@@ -692,7 +692,7 @@ installClient ()
 	echo "Instalando Pacotes ..."
 	sleep 1
 	killall -9 yumBackend.py
-	yum -y install gcc-c++ lzo
+	yum -y install gcc-c++ lzo lzo-devel libacl-devel
 	
 	# Efetuar o download do source do bacula e preparar para instalação
 	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-7.4.7.tar.gz
@@ -700,7 +700,8 @@ installClient ()
 	cd /usr/src/bacula-7.4.7/
 
 	#configurar, compilar, instalar e habilitar na inicialização
-	./configure --enable-client-only
+	./configure --with-logdir=/var/log/bacula --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula --enable-client-only
+
 	  make 
 	  make install
 	  make install-autostart
