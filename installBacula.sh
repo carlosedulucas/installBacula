@@ -242,7 +242,7 @@ installDependencias ()
 	sleep 1
 	killall -9 yumBackend.py
 	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel lzo-devel libacl-devel
-	yum -y install libpqxx-devell 
+	yum -y install libpqxx-devel
 	yum -y install qt4  qt4-devel  qwt qwt-devel
 	
 	if [ "postgresql" = $DB ]
