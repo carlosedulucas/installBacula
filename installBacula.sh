@@ -22,7 +22,7 @@
 ipserver=$(hostname -I | cut -d' ' -f1)
 dateVersion="31 de Outubro de 2017"
 
-TITULO="installBacula.sh - v.1.4.1"
+TITULO="installBacula.sh - v.1.4.2"
 BANNER="https://github.com/carlosedulucas"
 BD="Postgres" 
 
@@ -485,18 +485,19 @@ installBaculum()
 
 	verificaPacote /usr/src/bacula-gui-9.0.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-gui-9.0.4.tar.gz
 
-#	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-gui-9.0.4.tar.gz
-#	verificaDown /usr/src/bacula-gui-9.0.4.tar.gz
 	tar -xzvf /usr/src/bacula-gui-9.0.4.tar.gz  -C /usr/src/
 	cp -R /usr/src/bacula-gui-9.0.4/baculum/ /var/www/html/baculum
 
 	echo "apache ALL= NOPASSWD: /usr/sbin/bconsole" >> /etc/sudoers
 	echo "apache ALL= NOPASSWD: /etc/bacula/confapi" >> /etc/sudoers
+	echo "apache ALL= NOPASSWD: /usr/sbin/bdirjson" >> /etc/sudoers
 	echo "apache ALL= NOPASSWD: /usr/sbin/bbconsjson" >> /etc/sudoers
 	echo "apache ALL= NOPASSWD: /usr/sbin/bfdjson" >> /etc/sudoers
 	echo "apache ALL= NOPASSWD: /usr/sbin/bsdjson" >> /etc/sudoers
 
-
+	mkdir /etc/bacula/confapi
+	chown apache:apache /etc/bacula/confapi
+	chmod 777 etc/bacula/confapi
 	sed -i "s/memory_limit = 128M/memory_limit = 256M/g" /etc/php.ini
 
 	senhaBaculum=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe uma senha para o usuário admin do baculum: " --fb 10 50 3>&1 1>&2 2>&3)
@@ -507,15 +508,15 @@ installBaculum()
     chown apache: -R /var/www/html/baculum/
 	
 	cp /var/www/html/baculum/examples/rpm/baculum-web-apache.conf /etc/httpd/conf.d/
-	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' baculum-web-apache.conf
-	#sed -i 's/\/Web\/Config/\/Web/g' baculum-web-apache.conf
+	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' /etc/httpd/conf.d/baculum-web-apache.conf
+	
 
 	 cp /var/www/html/baculum/examples/rpm/baculum-api-apache.conf /etc/httpd/conf.d/
-	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' baculum-api-apache.conf
-	#sed -i 's/\/API\/Config/\/API/g' baculum-api-apache.conf
+	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' /etc/httpd/conf.d/baculum-api-apache.conf
+	
 	
 	chown -R :apache /etc/bacula/
-	#chmod  777 confapi
+	
 	cd /etc/bacula/
 	chown apache /sbin/bconsole
 	chown apache /etc/bacula/bconsole.conf
@@ -531,10 +532,13 @@ installBaculum()
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
   Baculum foi instalado com sucesso!
   Para acessá-lo utilize o navegador 
-  Aplicação
-  url: http://$ipserver:9095
+  Configurar a API primeiro e depois a aplicação
   API
   url: http://$ipserver:9096
+
+  Aplicação
+  url: http://$ipserver:9095
+  
 
   Dados Iniciais
   Usuário: admin
