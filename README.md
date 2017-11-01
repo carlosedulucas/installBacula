@@ -3,12 +3,12 @@ Script de Instalação do Bacula e Ferramentas Auxiliares
 
 Pré-requisitos
 --------------
- Instalação básica do OS com GUI(opcional) para utilização do BAT (bacula administration tools)    
+ Instalação básica do OS com GUI(opcional) 
  Partição primaria /backup com espaço suficiente para armazenamento dos volumes de backup
  Terminal logado como root   
  Acesso a internet no terminal de execução   
  
- Caso necessite autenticação para proxy execute no terminal:   
+ Caso necessite de autenticação para proxy execute no terminal:   
  export http_proxy=http://usuario:senha@proxy-xyz.com:porta  
  export https_proxy=http://usuario:senha@proxy-xyz.com:porta   
  export ftp_proxy=http://usuario:senha@proxy-xyz.com:porta   
@@ -39,10 +39,10 @@ Sistemas Operacionais Homologados
 		- Atribui  uma senha para o usuário do Banco de Dados
  - Instalação do Bacula
  - Desabilita o SELinux
- - Versão 7.4.7
+ - Versão 9.0.4
  - Compila
  - Instala
- - Cria DB bacula e atribui as permissões para o bacula no PostgreSQL
+ - Cria DB bacula e atribui as permissões para o bacula no PostgreSQL ou MySQL
  - Prepara os serviços do bacula(Dir, FD e SD), para inicialização junto ao sistema
  - Libera a execução do bacula e bacula-client no Firewall
  - Altera parâmetro de segurança(md5) no pg_hba.conf do PostgreSQL
@@ -50,7 +50,7 @@ Sistemas Operacionais Homologados
 
 2. Instalação Apenas do Cliente
 ---------------------------------------------------------------
-Esta opção deverá ser utilizada apenas para instalação do cliente não executá-la na servidor de backup bacula(Director)
+Esta opção deverá ser utilizada apenas para instalação do cliente. Não executá-la na servidor de backup bacula(Director)
 
 
 3. Instalação do Webmin
@@ -68,7 +68,7 @@ Neste caso o Webmin ira ser utilizado para configurar graficamente o Bacula
 ----------------------------------
 Webacula  Web + Bacula - web interface para o sistema de backup Bacula.
 
-- Instala um Fork do Webacula(Wnaderlei Huttel)
+- Instala um Fork do Webacula(Wanderlei Huttel)
 - Realiza o Download do Webacula
 - Instala ambiente web e dependências
 - Realiza configurações nos arquivos db.conf e config.ini
@@ -103,7 +103,7 @@ Esses incluem:
 Procedimentos
 
 - Realiza o Download do Baculum(Bacula-GUI)
-- Instala ambiente web e dependências
+- Instala ambiente web, API e dependências
 - Realiza configurações nos arquivos em sudoers, php.ini e host do Apache
 - Prepara o serviço httpd para inicializar junto ao OS
 - Libera execução do httpd no Firewall

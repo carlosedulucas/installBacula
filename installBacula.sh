@@ -1,10 +1,10 @@
 #!/bin/bash
 
-########################## Informações #######################################
+########################## Informações ##################7#####################
 # Autor: Carlosedulucas	/ Carlos Eduardo Lucas                               #
-# Data: 02/10/2016                                                           #
+# Data:  31/10/2017                                                          #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
-# Versão: 1.4.1                                                                #
+# Versão: 1.4.2                                                              #
 # OS: Testado e homologado Oracle Linux 7.1, CentOS 7                        #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
@@ -13,9 +13,14 @@
 # Email: carlosedulucas9@gmail.com                                           #
 ##############################################################################
 
+# update pacote epel-release
+# update instalação baculum
+
+
+
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="19 de Julho de  2017"
+dateVersion="31 de Outubro de 2017"
 
 TITULO="installBacula.sh - v.1.4.1"
 BANNER="https://github.com/carlosedulucas"
@@ -76,7 +81,7 @@ $BD foi selecionado para utilização
 	"5" "Instalação do Webacula" \
 	"6" "Instalação Bacula-Web" \
 	"7" "Instalação Baculum(bacula-gui)" \
-	"8" "Limpar cache de Downloads" \
+	"8" "Limpar Downloads" \
 	"9" "Exit" 3>&1 1>&2 2>&3)
 	 
 	status=$?
@@ -215,12 +220,12 @@ installWhiptail ()
 limparCacheDownloads()
 {
 	rm -fr /usr/src/webmin*
-	rm -fr /usr/src/bacula-7.4.7*
+	rm -fr /usr/src/bacula-9.0.4*
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
 	rm -fr /usr/src/bacula-web-latest*
-	rm -fr /usr/src/bacula-gui-7.*
+	rm -fr /usr/src/bacula-gui-9.0.4*
 
 	echo "Cache limpo ..."
 	sleep 5
@@ -234,8 +239,9 @@ installDependencias ()
 
 	echo "Realizando Download  Repositório Epel"
 	sleep 1
-	verificaPacote /usr/src/epel-release-7-10.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
-	rpm -ivh /usr/src/epel-release*
+	yum -y install epel-release 
+	#verificaPacote /usr/src/epel-release-7-10.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
+	#rpm -ivh /usr/src/epel-release*
 	clear
 
 	echo "Instalando Pacotes ..."
@@ -273,11 +279,11 @@ installBacula ()
 
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	verificaPacote 	/usr/src/bacula-7.4.7.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-7.4.7.tar.gz
-	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-7.4.7.tar.gz
-	#verificaDown /usr/src/bacula-7.4.7.tar.gz
-	tar -xvzf /usr/src/bacula-7.4.7.tar.gz -C /usr/src/
-	cd /usr/src/bacula-7.4.7/
+	verificaPacote 	/usr/src/bacula-9.0.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-9.0.4.tar.gz
+	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-9.0.4.tar.gz
+	#verificaDown /usr/src/bacula-9.0.4.tar.gz
+	tar -xvzf /usr/src/bacula-9.0.4.tar.gz -C /usr/src/
+	cd /usr/src/bacula-9.0.4/
 
 	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
 	export PATH=/usr/lib64/qt4/bin/:$PATH
@@ -477,43 +483,59 @@ installBaculum()
 
 	installHttp
 
-	verificaPacote /usr/src/bacula-gui-7.4.7.tar.gz https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-gui-7.4.7.tar.gz
+	verificaPacote /usr/src/bacula-gui-9.0.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-gui-9.0.4.tar.gz
 
-#	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-gui-7.4.7.tar.gz
-#	verificaDown /usr/src/bacula-gui-7.4.7.tar.gz
-	tar -xzvf /usr/src/bacula-gui-7.4.7.tar.gz  -C /usr/src/
-	cp -R /usr/src/bacula-gui-7.4.7/baculum/ /var/www/html/baculum
+#	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-gui-9.0.4.tar.gz
+#	verificaDown /usr/src/bacula-gui-9.0.4.tar.gz
+	tar -xzvf /usr/src/bacula-gui-9.0.4.tar.gz  -C /usr/src/
+	cp -R /usr/src/bacula-gui-9.0.4/baculum/ /var/www/html/baculum
 
 	echo "apache ALL= NOPASSWD: /usr/sbin/bconsole" >> /etc/sudoers
+	echo "apache ALL= NOPASSWD: /etc/bacula/confapi" >> /etc/sudoers
+	echo "apache ALL= NOPASSWD: /usr/sbin/bbconsjson" >> /etc/sudoers
+	echo "apache ALL= NOPASSWD: /usr/sbin/bfdjson" >> /etc/sudoers
+	echo "apache ALL= NOPASSWD: /usr/sbin/bsdjson" >> /etc/sudoers
 
 
 	sed -i "s/memory_limit = 128M/memory_limit = 256M/g" /etc/php.ini
 
 	senhaBaculum=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe uma senha para o usuário admin do baculum: " --fb 10 50 3>&1 1>&2 2>&3)
+	htpasswd -cb /var/www/html/baculum/protected/Web/baculum.users admin $senhaBaculum
+	cp /var/www/html/baculum/protected/Web/baculum.users /var/www/html/baculum/protected/Web/Config/
+	cp /var/www/html/baculum/protected/Web/baculum.users /var/www/html/baculum/protected/API/Config/
+	
+    chown apache: -R /var/www/html/baculum/
+	
+	cp /var/www/html/baculum/examples/rpm/baculum-web-apache.conf /etc/httpd/conf.d/
+	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' baculum-web-apache.conf
+	#sed -i 's/\/Web\/Config/\/Web/g' baculum-web-apache.conf
 
-	htpasswd -cb /var/www/html/baculum/protected/Data/baculum.users admin $senhaBaculum
-	chown apache: -R /var/www/html/baculum/
+	 cp /var/www/html/baculum/examples/rpm/baculum-api-apache.conf /etc/httpd/conf.d/
+	sed -i 's/\/usr\/share\/baculum\/htdocs/\/var\/www\/html\/baculum/g' baculum-api-apache.conf
+	#sed -i 's/\/API\/Config/\/API/g' baculum-api-apache.conf
 	
-	echo "
-	<Directory /var/www/html/baculum>
-		AllowOverride All
-		AuthType Basic
-		AuthName MyPrivateFile
-		AuthUserFile /var/www/html/baculum/protected/Data/baculum.users
-		Require valid-user
-	</Directory>
-	" >> /etc/httpd/conf.d/baculum.conf
-	
+	chown -R :apache /etc/bacula/
+	#chmod  777 confapi
 	cd /etc/bacula/
 	chown apache /sbin/bconsole
 	chown apache /etc/bacula/bconsole.conf
 	chmod 775 /etc/bacula/
+	
+	firewall-cmd --permanent --add-port=9095/tcp
+	firewall-cmd --permanent --add-port=9095/udp
+	firewall-cmd --permanent --add-port=9096/tcp
+	firewall-cmd --permanent --add-port=9096/udp
 
+	systemctl restart firewalld
 	systemctl restart httpd.service
 	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
   Baculum foi instalado com sucesso!
   Para acessá-lo utilize o navegador 
-  url: http://$ipserver/baculum
+  Aplicação
+  url: http://$ipserver:9095
+  API
+  url: http://$ipserver:9096
+
   Dados Iniciais
   Usuário: admin
   Senha: $senhaBaculum 
@@ -584,6 +606,7 @@ installWebacula()
 	chmod 775 /etc/bacula/
 
 	cp /var/www/html/webacula/install/apache/webacula.conf /etc/httpd/conf.d/
+	
 	sed -i 's/\/var\/www\/webacula/\/var\/www\/html\/webacula/g' /etc/httpd/conf.d/webacula.conf
 
 	mask=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --inputbox  "Informe sua mascara de rede " --fb 10 50 3>&1 1>&2 2>&3)	
@@ -695,9 +718,9 @@ installClient ()
 	yum -y install gcc-c++ lzo lzo-devel libacl-devel
 	
 	# Efetuar o download do source do bacula e preparar para instalação
-	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/7.4.7/bacula-7.4.7.tar.gz
-	tar -xvzf /usr/src/bacula-7.4.7.tar.gz -C /usr/src/
-	cd /usr/src/bacula-7.4.7/
+	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-9.0.4.tar.gz
+	tar -xvzf /usr/src/bacula-9.0.4.tar.gz -C /usr/src/
+	cd /usr/src/bacula-9.0.4/
 
 	#configurar, compilar, instalar e habilitar na inicialização
 	./configure --with-logdir=/var/log/bacula --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula --enable-client-only
@@ -747,7 +770,7 @@ infoFinal ()
   Download:  $BANNER
 
   Este Script realiza a instalação:
-  - Bacula-7.4.7
+  - Bacula-9.0.4
   - PostgreSQL
   - bconsole
   - BAT (Bacula Administration Tool) caso seu servidor possua interface gráfica
