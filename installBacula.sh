@@ -356,20 +356,20 @@ installBacula ()
 
         elif [ "mysql" = $DB ]
         then
- 		parametrosDB="-u root -p$senhaBD"
+ 		parametrosDB="-u root --password='$senhaBD'"
     		echo "criando DataBase Bacula"
 	        sleep 1
-	        /etc/bacula/scripts/./create_bacula_database $parametrosDB
+	        /etc/bacula/scripts/./create_mysql_database $parametrosDB
 	
 	        clear
 	        echo "criando Tabelas Bacula"
 	        sleep 1
-        	/etc/bacula/scripts/./make_bacula_tables $parametrosDB
-
+        	/etc/bacula/scripts/./make_mysql_tables $parametrosDB
+		sed -i '/db_password=/d' /etc/bacula/scripts/grant_mysql_privileges
 	        clear
 	        echo "Permissões DB"
 	        sleep 1
-        	/etc/bacula/scripts/./grant_bacula_privileges $parametrosDB
+        	/etc/bacula/scripts/./grant_mysql_privileges $parametrosDB
 
         fi
 
