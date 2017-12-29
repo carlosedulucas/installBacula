@@ -235,12 +235,12 @@ installWhiptail ()
 limparCacheDownloads()
 {
 	rm -fr /usr/src/webmin*
-	rm -fr /usr/src/bacula-9.0.4*
+	rm -fr /usr/src/bacula-9.0.6*
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
 	rm -fr /usr/src/bacula-web-latest*
-	rm -fr /usr/src/bacula-gui-9.0.4*
+	rm -fr /usr/src/bacula-gui-9.0.6*
 
 	echo "Cache limpo ..."
 	sleep 5
@@ -294,11 +294,10 @@ installBacula ()
 
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	verificaPacote 	/usr/src/bacula-9.0.4.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-9.0.4.tar.gz
-	#wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.4/bacula-9.0.4.tar.gz
-	#verificaDown /usr/src/bacula-9.0.4.tar.gz
-	tar -xvzf /usr/src/bacula-9.0.4.tar.gz -C /usr/src/
-	cd /usr/src/bacula-9.0.4/
+	verificaPacote 	/usr/src/bacula-9.0.6.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.6/bacula-9.0.6.tar.gz
+	
+	tar -xvzf /usr/src/bacula-9.0.6.tar.gz -C /usr/src/
+	cd /usr/src/bacula-9.0.6/
 
 	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
 	export PATH=/usr/lib64/qt4/bin/:$PATH
