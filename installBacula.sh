@@ -22,7 +22,7 @@
 ipserver=$(hostname -I | cut -d' ' -f1)
 dateVersion="31 de Outubro de 2017"
 
-TITULO="installBacula.sh - v.1.4.2"
+TITULO="installBacula.sh - v.1.4.3"
 BANNER="https://github.com/carlosedulucas"
 BD="Postgres" 
 
@@ -99,6 +99,9 @@ verificaPostgreSQL ()
 {
 	clear
 	#!/bin/bash
+	
+	senhaBD=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário do BD " --fb 10 50 3>&1 1>&2 2>&3)
+	
 	if (rpm -qa | grep postgresql-server) ;then
 		   echo "instalado"
 		   sleep 5
@@ -106,6 +109,18 @@ verificaPostgreSQL ()
 		   killall -9 yumBackend.py
 		   yum install -y postgresql postgresql-server php-pgsql
 		   postgresql-setup initdb
+		   
+		   #preparando DB, Tables e Privilegios
+		   # baixar a segurança do postgres será elevada posteriormente
+		   sed  -i '/local/ s/peer/trust/g' /var/lib/pgsql/data/pg_hba.conf
+		   systemctl restart postgresql.service
+
+		   #criando uma senha para o usuário postgres
+		   psql -U postgres -c "alter user postgres with encrypted password '$senhaBD';"
+
+
+	       	   sed   -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
+		   systemctl restart postgresql.service
 		   sleep 5
 	fi
 	
@@ -302,18 +317,7 @@ installBacula ()
 	if [ "postgresql" = $DB ]
 	then
 		dbuser="postgres"	
-		#preparando DB, Tables e Privilegios
-		# baixar a segurança do postgres será elevada posteriormente
-		sed  -i '/local/ s/peer/trust/g' /var/lib/pgsql/data/pg_hba.conf
-		systemctl restart postgresql.service
-
-		#criando uma senha para o usuário postgres
-		psql -U postgres -c "alter user postgres with encrypted password '$senhaBD';"
-
-
-		sed  -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
-		systemctl restart postgresql.service
-
+		sed -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
 	elif [ "mysql" = $DB ]
 	then		
 		dbuser="root"
@@ -561,7 +565,7 @@ installWebacula()
 	#wget -P /usr/src https://github.com/wanderleihuttel/webacula/archive/master.zip
 	#verificaDown /usr/src/master.zip
 	yum -y install unzip 
-	unzip /usr/src/master.zip -d /usr/src
+	unzip -f /usr/src/master.zip -d /usr/src
 	cp -r /usr/src/webacula-master/ /var/www/html/webacula
 	chown apache:apache -R /var/www/html/
 	cd /var/www/html/webacula/install/
@@ -569,10 +573,8 @@ installWebacula()
 	
 	senhaBD=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe senha do usuário BD " --fb 10 50 3>&1 1>&2 2>&3) 
 	
-	sed  -i "/db_pwd=/ s/''/'$senhaBD'/g" /var/www/html/webacula/install/db.conf
 	if [ "postgresql" = $DB ]
 	then
-		sed  -i "/db_user=/ s/root/postgres/g"	/var/www/html/webacula/install/db.conf
 		sed  -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
 		systemctl restart postgresql.service
 		cd /var/www/html/webacula/install/PostgreSql/
@@ -585,18 +587,20 @@ installWebacula()
 		sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
 		systemctl restart postgresql.service
 	
-		sed -i '/db.adapter/ s/PDO_MYSQL/PDO_PGSQL/g' /var/www/html/webacula/application/config.ini
 		sed -i '/db.config.username/ s/bacula/postgres/g' /var/www/html/webacula/application/config.ini
+
+
 	
 	elif [ "mysql" = $DB ]
 	then
-		cd /var/www/html/webacula/install/MySql/
+		sed -i '/db.adapter/ s/PDO_PGSQL/PDO_MYSQL/g' /var/www/html/webacula/application/config.ini
+                sed -i '/db.config.username/ s/bacula/root/g' /var/www/html/webacula/application/config.ini
+		sed -i '/db.config.host/ s/localhost/127.0.0.1/g' /var/www/html/webacula/application/config.ini
 
-		sed -i '/./ s/..\/db.conf/\/var\/www\/html\/webacula\/install\/db.conf/g'  /var/www/html/webacula/install/MySql/10_make_tables.sh
-		sed -i '/./ s/..\/db.conf/\/var\/www\/html\/webacula\/install\/db.conf/g'  /var/www/html/webacula/install/MySql/20_acl_make_tables.sh
-		sed -i '/db.config.username/ s/bacula/root/g' /var/www/html/webacula/application/config.ini	
-		./10_make_tables.sh
-		./20_acl_make_tables.sh	
+		cd /var/www/html/webacula/install/MySql/
+		parametrosDB="-u root -p$senhaBD"
+		./10_make_tables.sh $parametrosDB
+		./20_acl_make_tables.sh	$parametrosDB
 	fi
 	
 	sed -i "/db.config.password/ s/bacula/$senhaBD/g" /var/www/html/webacula/application/config.ini
