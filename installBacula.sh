@@ -239,7 +239,7 @@ limparCacheDownloads()
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
-	rm -fr /usr/src/bacula-web-latest*
+	rm -fr /usr/src/bacula-web-*
 	rm -fr /usr/src/bacula-gui-9.0.6*
 
 	echo "Cache limpo ..."
@@ -309,18 +309,12 @@ installBacula ()
 	echo "Configurando o Bacula"
 	sleep 1
 	
-	
-
-
-
 	if [ "postgresql" = $DB ]
 	then
-		dbuser="postgres"	
-		sed -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
+		dbuser="postgres"
 	elif [ "mysql" = $DB ]
 	then		
 		dbuser="root"
-		parametrosDB="-u root -p$senhaBD"
 	fi
 
 	#configurar, compilar, instalar e habilitar na inicialização
@@ -348,26 +342,38 @@ installBacula ()
 	#criar o BD e popular suas informações
 	chmod 775 -R /etc/bacula
 	clear 
-	echo "criando DataBase Bacula"
-	sleep 1
-	/etc/bacula/scripts/./create_bacula_database $parametrosDB
-
-	clear 
-	echo "criando Tabelas Bacula"
-	sleep 1	
-	/etc/bacula/scripts/./make_bacula_tables $parametrosDB
-
-	clear 
-	echo "Permissões DB"
-	sleep 1	
-	/etc/bacula/scripts/./grant_bacula_privileges $parametrosDB
 	
-	if [ "postgresql" = $DB ]
-	then
-		sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
-		sed  -i '/host/ s/ident/md5/g' /var/lib/pgsql/data/pg_hba.conf
+	 if [ "postgresql" = $DB ]
+	then        
+		sed -i '/local/ s/md5/trust/g' /var/lib/pgsql/data/pg_hba.conf
 		systemctl restart postgresql.service
-	fi
+		su -c "/etc/bacula/scripts/./create_bacula_database" postgres
+		su -c "/etc/bacula/scripts/./make_bacula_tables" postgres
+		su -c "/etc/bacula/scripts/./grant_bacula_privileges" postgres
+		sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
+                sed  -i '/host/ s/ident/md5/g' /var/lib/pgsql/data/pg_hba.conf
+                systemctl restart postgresql.service
+
+        elif [ "mysql" = $DB ]
+        then
+ 		parametrosDB="-u root -p$senhaBD"
+    		echo "criando DataBase Bacula"
+	        sleep 1
+	        /etc/bacula/scripts/./create_bacula_database $parametrosDB
+	
+	        clear
+	        echo "criando Tabelas Bacula"
+	        sleep 1
+        	/etc/bacula/scripts/./make_bacula_tables $parametrosDB
+
+	        clear
+	        echo "Permissões DB"
+	        sleep 1
+        	/etc/bacula/scripts/./grant_bacula_privileges $parametrosDB
+
+        fi
+
+	
 
 	#Liberando o uso do bacula no firewall
 	firewall-cmd --permanent --zone=public --add-service=bacula-client
@@ -561,10 +567,8 @@ installWebacula()
 	installHttp
 	
 	verificaPacote /usr/src/master.zip https://github.com/wanderleihuttel/webacula/archive/master.zip
-	#wget -P /usr/src https://github.com/wanderleihuttel/webacula/archive/master.zip
-	#verificaDown /usr/src/master.zip
 	yum -y install unzip 
-	unzip -f /usr/src/master.zip -d /usr/src
+	unzip /usr/src/master.zip -d /usr/src
 	cp -r /usr/src/webacula-master/ /var/www/html/webacula
 	chown apache:apache -R /var/www/html/
 	cd /var/www/html/webacula/install/
@@ -645,12 +649,11 @@ installBaculaWeb()
 	sleep 2
 
 	installHttp
-	
-	verificaPacote /usr/src/bacula-web-latest.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz	
+	verificaPacote /usr/src/bacula-web-7.4.0.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/7.4.0/bacula-web-7.4.0.tgz 
+	#verificaPacote /usr/src/bacula-web-latest.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz	
 	#wget -P /usr/src http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz
-	#verificaDown /usr/src/bacula-web-latest.tgz
-	mkdir -v /var/www/html/bacula-web
-	tar -xzf /usr/src/bacula-web-latest.tgz -C /var/www/html/bacula-web
+	mkdir /var/www/html/bacula-web
+	tar -xzf /usr/src/bacula-web-7.4.0.tgz -C /var/www/html/bacula-web
 	chown -Rv apache: /var/www/html/bacula-web
 	sleep 5
 	
@@ -854,7 +857,7 @@ case $menuPrincipal in
 	;;
 	
 	3)
-		installClientE
+		installClient
 		menuPrincipal
 	;;
 		
