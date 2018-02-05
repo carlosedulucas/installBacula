@@ -2,10 +2,10 @@
 
 ########################## Informações ##################7#####################
 # Autor: Carlosedulucas	/ Carlos Eduardo Lucas                               #
-# Data:  31/10/2017                                                          #
+# Data:  02/02/2018                                                          #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
-# Versão: 1.4.2                                                              #
-# OS: Testado e homologado Oracle Linux 7.1, CentOS 7                        #
+# Versão: 1.4.3                                                              #
+# OS: Testado e homologado Oracle Linux 7.4, CentOS 7                        #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
 # Não retire os devidos créditos                                             #
@@ -20,7 +20,7 @@
 
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="31 de Outubro de 2017"
+dateVersion="02 de Fevereiro de 2018"
 
 TITULO="installBacula.sh - v.1.4.3"
 BANNER="https://github.com/carlosedulucas"

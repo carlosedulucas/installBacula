@@ -3,7 +3,7 @@ Script de Instalação do Bacula e Ferramentas Auxiliares
 
 Pré-requisitos
 --------------
- Instalação básica do OS com GUI(opcional) para utilização do BAT (bacula administration tools)    
+ Instalação básica do OS com GUI(opcional)     
  Partição primaria /backup com espaço suficiente para armazenamento dos volumes de backup
  Terminal logado como root   
  Acesso a internet no terminal de execução   
@@ -24,7 +24,7 @@ chmod +x installBacula.sh
 Sistemas Operacionais Homologados
 -------------------------------------------------
 
- - Oracle Linux 7.1
+ - Oracle Linux 7.4
  - CentOS 7
 
 1. Instalação do Servidor Bacula
@@ -39,10 +39,10 @@ Sistemas Operacionais Homologados
 		- Atribui  uma senha para o usuário do Banco de Dados
  - Instalação do Bacula
  - Desabilita o SELinux
- - Versão 7.4.7
- - Compila
- - Instala
- - Cria DB bacula e atribui as permissões para o bacula no PostgreSQL
+ - Versão 9.0.6
+ - Compilação do Bacula
+ - Instalação
+ - Cria BD bacula e atribui as permissões para o bacula 
  - Prepara os serviços do bacula(Dir, FD e SD), para inicialização junto ao sistema
  - Libera a execução do bacula e bacula-client no Firewall
  - Altera parâmetro de segurança(md5) no pg_hba.conf do PostgreSQL
@@ -53,18 +53,7 @@ Sistemas Operacionais Homologados
 Esta opção deverá ser utilizada apenas para instalação do cliente não executá-la na servidor de backup bacula(Director)
 
 
-3. Instalação do Webmin
---------------------------------
-Webmin é uma interface web para administração do seu servidor ,por exemplo: Você pode configurar contas de usuário, configurar um Servidor Apache, um Servidor de DNS, compartilhamento de arquivos com Samba, entres outros serviços. O Webmin remove a necessidade de editar manualmente arquivos de configuração.
-Neste caso o Webmin ira ser utilizado para configurar graficamente o Bacula
-
-- Realiza o Download do pacote webmin
-- Instala dependências para integração do webmin e bacula
-- Instala o webmin
-- Libera execução do webmin no Firewall
-
-
-4. Instalação do Webacula
+3. Instalação do Webacula
 ----------------------------------
 Webacula  Web + Bacula - web interface para o sistema de backup Bacula.
 
@@ -75,7 +64,7 @@ Webacula  Web + Bacula - web interface para o sistema de backup Bacula.
 - Prepara o serviço httpd para inicializar junto ao OS
 - Libera execução do httpd no Firewall
 
-5. Instalação do Bacula-Web
+4. Instalação do Bacula-Web
 ----------------------------------
 Bacula-Web é uma ferramenta baseada na Web de relatórios e monitoramento que fornece informações úteis sobre a sua infraestrutura Bacula como jobs, pools, volumes, logs de tarefas, clientes e relatórios de jobs de backup e muito mais ...
 Bacula-Web é livre (como um pássaro) e liberado sob o termo da licença GPL v 2.0.
@@ -86,7 +75,7 @@ Bacula-Web é livre (como um pássaro) e liberado sob o termo da licença GPL v 
 - Prepara o serviço httpd para inicializar junto ao OS
 - Libera execução do httpd no Firewall
 
-6. Instalação do Baculum(Bacula-GUI)
+5. Instalação do Baculum(Bacula-GUI)
 ----------------------------------
 Baculum é uma interface Bacula baseada na Web, que permite várias funções de administração Bacula.
 
@@ -110,6 +99,6 @@ Procedimentos
 
 
 
-7. Limpar cache de Downloads
+6. Limpar cache de Downloads
 ----------------------------------------
 Remove todos os downloads efetuados.
