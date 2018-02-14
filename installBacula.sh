@@ -150,7 +150,12 @@ verificaMySQL ()
 	
 	#Habilitar e inicializar o posgresql com o sistema
 	systemctl start mysqld.service
+	whiptail --title "${TITULO}" --backtitle "${BANNER}" --msgbox "
+ Vamos configurar o modo de segurança do MYSQL 
+
+	"  --fb 20 50
 	mysql_secure_installation
+
 	systemctl enable mysqld.service
 
 }
@@ -585,6 +590,7 @@ installWebacula()
 		sed -i '/./ s/..\/db.conf/\/var\/www\/html\/webacula\/install\/db.conf/g'  /var/www/html/webacula/install/PostgreSql/20_acl_make_tables.sh
 		su -c "./10_make_tables.sh" postgres 
 		su -c "./20_acl_make_tables.sh" postgres 
+		su -c "./30_grant_postgresql_privileges.sh" postgres 
 	
 		sed  -i '/local/ s/trust/md5/g' /var/lib/pgsql/data/pg_hba.conf
 		systemctl restart postgresql.service
@@ -596,16 +602,17 @@ installWebacula()
 	elif [ "mysql" = $DB ]
 	then
 		sed -i '/db.adapter/ s/PDO_PGSQL/PDO_MYSQL/g' /var/www/html/webacula/application/config.ini
-                sed -i '/db.config.username/ s/bacula/root/g' /var/www/html/webacula/application/config.ini
+        sed -i '/db.config.username/ s/bacula/root/g' /var/www/html/webacula/application/config.ini
 		sed -i '/db.config.host/ s/localhost/127.0.0.1/g' /var/www/html/webacula/application/config.ini
 
 		cd /var/www/html/webacula/install/MySql/
 		parametrosDB="-u root -p$senhaBD"
 		./10_make_tables.sh $parametrosDB
 		./20_acl_make_tables.sh	$parametrosDB
+		./30_grant_mysql_privileges.sh parametrosDB
 	fi
 	
-	sed -i "/db.config.password/ s/bacula/$senhaBD/g" /var/www/html/webacula/application/config.ini
+	sed -i "/db.config.password/ s/bacula/\"${senhaBD}\"/g" /var/www/html/webacula/application/config.ini
 	sed -i '/bacula.sudo/ s/"\/usr\/bin\/sudo"/""/g' /var/www/html/webacula/application/config.ini
 	sed -i '/bacula.bconsole/ s/"\/opt\/bacula\/sbin\/bconsole"/"\/sbin\/bconsole"/g' /var/www/html/webacula/application/config.ini
 
@@ -649,8 +656,6 @@ installBaculaWeb()
 
 	installHttp
 	verificaPacote /usr/src/bacula-web-7.4.0.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/7.4.0/bacula-web-7.4.0.tgz 
-	#verificaPacote /usr/src/bacula-web-latest.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz	
-	#wget -P /usr/src http://www.bacula-web.org/files/bacula-web.org/downloads/bacula-web-latest.tgz
 	mkdir /var/www/html/bacula-web
 	tar -xzf /usr/src/bacula-web-7.4.0.tgz -C /var/www/html/bacula-web
 	chown -Rv apache: /var/www/html/bacula-web
