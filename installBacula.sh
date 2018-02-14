@@ -107,7 +107,7 @@ verificaPostgreSQL ()
 		   sleep 5
 	else
 		   killall -9 yumBackend.py
-		   yum install -y postgresql postgresql-server php-pgsql
+		   yum install -y postgresql postgresql-server php-pgsql libpqxx-devel
 		   postgresql-setup initdb
 		   
 		   #preparando DB, Tables e Privilegios
@@ -263,7 +263,6 @@ installDependencias ()
 	sleep 1
 	killall -9 yumBackend.py
 	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel lzo-devel libacl-devel
-	yum -y install libpqxx-devel
 	yum -y install qt4  qt4-devel  qwt qwt-devel
 	
 	if [ "postgresql" = $DB ]
@@ -359,17 +358,17 @@ installBacula ()
  		parametrosDB="-u root --password='$senhaBD'"
     		echo "criando DataBase Bacula"
 	        sleep 1
-	        /etc/bacula/scripts/./create_mysql_database $parametrosDB
+	        /etc/bacula/scripts/./create_bacula_database $parametrosDB
 	
 	        clear
 	        echo "criando Tabelas Bacula"
 	        sleep 1
-        	/etc/bacula/scripts/./make_mysql_tables $parametrosDB
+        	/etc/bacula/scripts/./make_bacula_tables $parametrosDB
 		sed -i '/db_password=/d' /etc/bacula/scripts/grant_mysql_privileges
 	        clear
 	        echo "Permissões DB"
 	        sleep 1
-        	/etc/bacula/scripts/./grant_mysql_privileges $parametrosDB
+        	/etc/bacula/scripts/./grant_bacula_privileges $parametrosDB
 
         fi
 
