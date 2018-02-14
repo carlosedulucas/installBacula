@@ -24,7 +24,7 @@ dateVersion="02 de Fevereiro de 2018"
 
 TITULO="installBacula.sh - v.1.4.3"
 BANNER="https://github.com/carlosedulucas"
-BD="Postgres" 
+DB="Postgres" 
 
 contato=carlosedulucas9@gmail.com	
 
@@ -51,7 +51,7 @@ selecionaBD()
 	then
 		DB="postgresql"
 	else
-		DB="mysql"
+		DB="mysql" 
 	fi
 
 	if [ "postgresql" = $DB ]
@@ -71,7 +71,7 @@ menuPrincipal ()
 	menuPrincipal=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --menu "
 Escolha uma opção na lista abaixo
 
-$BD foi selecionado para utilização 
+$DB foi selecionado para utilização 
 
 " --fb 23 60 9\
 	"1" "Selecionar o BD a ser utilizado" \
