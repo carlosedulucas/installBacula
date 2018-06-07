@@ -240,12 +240,12 @@ installWhiptail ()
 limparCacheDownloads()
 {
 	rm -fr /usr/src/webmin*
-	rm -fr /usr/src/bacula-9.0.6*
+	rm -fr /usr/src/bacula-9.0.8*
 	rm -fr /usr/src/epel*
 	rm -fr /usr/src/master*
 	rm -fr /usr/src/webacula-master*
 	rm -fr /usr/src/bacula-web-*
-	rm -fr /usr/src/bacula-gui-9.0.6*
+	rm -fr /usr/src/bacula-gui-9.0.8*
 
 	echo "Cache limpo ..."
 	sleep 5
@@ -298,10 +298,10 @@ installBacula ()
 
 
 	# Efetuar o download do source do bacula e preparar para instalação
-	verificaPacote 	/usr/src/bacula-9.0.6.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.6/bacula-9.0.6.tar.gz
+	verificaPacote 	/usr/src/bacula-9.0.8.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.8/bacula-9.0.8.tar.gz
 	
-	tar -xvzf /usr/src/bacula-9.0.6.tar.gz -C /usr/src/
-	cd /usr/src/bacula-9.0.6/
+	tar -xvzf /usr/src/bacula-9.0.8.tar.gz -C /usr/src/
+	cd /usr/src/bacula-9.0.8/
 
 	# setar variaveis de ambiente para o Bat (Bacula Administration tool)
 	export PATH=/usr/lib64/qt4/bin/:$PATH
@@ -496,10 +496,10 @@ installBaculum()
 
 	installHttp
 
-	verificaPacote /usr/src/bacula-gui-9.0.6.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.6/bacula-gui-9.0.6.tar.gz
+	verificaPacote /usr/src/bacula-gui-9.0.8.tar.gz https://sourceforge.net/projects/bacula/files/bacula/9.0.8/bacula-gui-9.0.8.tar.gz
 
-	tar -xzvf /usr/src/bacula-gui-9.0.6.tar.gz  -C /usr/src/
-	cp -R /usr/src/bacula-gui-9.0.6/baculum/ /var/www/html/baculum
+	tar -xzvf /usr/src/bacula-gui-9.0.8.tar.gz  -C /usr/src/
+	cp -R /usr/src/bacula-gui-9.0.8/baculum/ /var/www/html/baculum
 
 	echo "apache ALL= NOPASSWD: /usr/sbin/bconsole" >> /etc/sudoers
 	echo "apache ALL= NOPASSWD: /etc/bacula/confapi" >> /etc/sudoers
@@ -732,9 +732,9 @@ installClient ()
 	yum -y install gcc-c++ lzo lzo-devel libacl-devel
 	
 	# Efetuar o download do source do bacula e preparar para instalação
-	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.6/bacula-9.0.6.tar.gz
-	tar -xvzf /usr/src/bacula-9.0.6.tar.gz -C /usr/src/
-	cd /usr/src/bacula-9.0.6/
+	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/9.0.8/bacula-9.0.8.tar.gz
+	tar -xvzf /usr/src/bacula-9.0.8.tar.gz -C /usr/src/
+	cd /usr/src/bacula-9.0.8/
 
 	#configurar, compilar, instalar e habilitar na inicialização
 	./configure --with-logdir=/var/log/bacula --enable-systemd --with-scriptdir=/etc/bacula/scripts --with-plugindir=/etc/bacula/plugins --sysconfdir=/etc/bacula --enable-client-only
@@ -784,7 +784,7 @@ infoFinal ()
   Download:  $BANNER
 
   Este Script realiza a instalação:
-  - Bacula-9.0.6
+  - Bacula-9.0.8
   - PostgreSQL
   - bconsole
   - BAT (Bacula Administration Tool) caso seu servidor possua interface gráfica
