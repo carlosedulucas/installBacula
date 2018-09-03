@@ -39,7 +39,7 @@ Sistemas Operacionais Homologados
 		- Atribui  uma senha para o usuário do Banco de Dados
  - Instalação do Bacula
  - Desabilita o SELinux
- - Versão 9.0.6
+ - Versão 9.2.1
  - Compilação do Bacula
  - Instalação
  - Cria BD bacula e atribui as permissões para o bacula 
