@@ -18,12 +18,12 @@
 
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="29 de Agosto de 2018"
+dateVersion="22 de Maio de 2019"
 
-TITULO="installBacula.sh - v.1.4.4"
+TITULO="installBacula.sh - v.1.4.5"
 BANNER="https://github.com/carlosedulucas"
 DB="Postgres" 
-versaoBacula="9.2.1"
+versaoBacula="9.4.2"
 
 contato=carlosedulucas9@gmail.com	
 
