@@ -3,7 +3,7 @@
 ########################## Informações ##################7#####################
 # Autor: Carlosedulucas	/ Carlos Eduardo Lucas                               #
 # Descrição: instalação do servidor ou cliente de backup bacula              #
-# OS: Testado e homologado Oracle Linux 7.4, CentOS 7                        #
+# OS: Testado e homologado Oracle Linux 7.7              #
 #                                                                            #
 # Reporte os erros que encontrar para o email abaixo                         #
 # Não retire os devidos créditos                                             #
@@ -11,6 +11,17 @@
 # Email: carlosedulucas9@gmail.com                                           #
 ##############################################################################
 
+##1.4.6
+# add --skip-broken
+# update version bacula 9.6.6
+# update version webmin 955
+# update version bacula-web 8.0.4
+# fix localization /etv/bacula-web
+# add repository ol_developer_php
+# fix version php 7.2	
+# fix bug postgres database for webbacula
+
+##1.4.5
 # update pacote epel-release
 # update instalação baculum
 
@@ -18,12 +29,12 @@
 
 # Variaveis
 ipserver=$(hostname -I | cut -d' ' -f1)
-dateVersion="22 de Maio de 2019"
+dateVersion="24 de Setembro de 2020"
 
-TITULO="installBacula.sh - v.1.4.5"
+TITULO="installBacula.sh - v.1.4.6"
 BANNER="https://github.com/carlosedulucas"
 DB="Postgres" 
-versaoBacula="9.4.2"
+versaoBacula="9.6.6"
 
 contato=carlosedulucas9@gmail.com	
 
@@ -106,7 +117,7 @@ verificaPostgreSQL ()
 		   sleep 5
 	else
 		   killall -9 yumBackend.py
-		   yum install -y postgresql postgresql-server php-pgsql libpqxx-devel
+		   yum install -y postgresql postgresql-server libpqxx-devel --skip-broken
 		   postgresql-setup initdb
 		   
 		   #preparando DB, Tables e Privilegios
@@ -141,7 +152,7 @@ verificaMySQL ()
 		   wget http://repo.mysql.com/mysql-community-release-el5-7.noarch.rpm
 		   sudo rpm -ivh mysql-community-release-el5-7.noarch.rpm
 		   killall -9 yumBackend.py
-		   yum install -y mysql mysql-server mysql-devel php-mysql
+		   yum install -y mysql mysql-server mysql-devel  --skip-broken
 
 		   
 		   sleep 5
@@ -253,21 +264,22 @@ limparCacheDownloads()
 
 installDependencias ()
 {
-
 	clear 
 
 	echo "Realizando Download  Repositório Epel"
 	sleep 1
-	yum -y install epel-release 
+	yum -y install epel-release  --skip-broken
 	#verificaPacote /usr/src/epel-release-7-10.noarch.rpm http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
 	#rpm -ivh /usr/src/epel-release*
 	clear
 
+	yum update --skip-broken
+
 	echo "Instalando Pacotes ..."
 	sleep 1
 	killall -9 yumBackend.py
-	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel lzo-devel libacl-devel
-	yum -y install qt4  qt4-devel  qwt qwt-devel
+	yum -y install openssl-devel gcc-c++ readline readline-devel lzo libacl-devel lzo-devel libacl-devel --skip-broken
+	yum -y install qt4  qt4-devel  qwt qwt-devel --skip-broken
 	
 	if [ "postgresql" = $DB ]
 	then
@@ -439,23 +451,23 @@ installWebmin()
 	echo "Instalando Webmin"
 	sleep 2
 	
-	verificaPacote /usr/src/webmin-1.831-1.noarch.rpm http://prdownloads.sourceforge.net/webadmin/webmin-1.831-1.noarch.rpm
+	verificaPacote /usr/src/webmin-1.1955-1.noarch.rpm http://prdownloads.sourceforge.net/webadmin/webmin-1.955-1.noarch.rpm
 	#wget -P /usr/src http://prdownloads.sourceforge.net/webadmin/webmin-1.831-1.noarch.rpm
 	#verificaDown /usr/src/webmin-1.831-1.noarch.rpm
 	killall -9 yumBackend.py
-	yum install -y  perl perl-Net-SSLeay openssl perl-IO-Tty
+	yum install -y  perl perl-Net-SSLeay openssl perl-IO-Tty --skip-broken
 	
 	if [ "postgresql" = $DB ]
 	then
 		killall -9 yumBackend.py		
-		yum -y install perl-DBD-Pg 
+		yum -y install perl-DBD-Pg  --skip-broken
 	elif [ "mysql" = $DB ]
 	then
 		killall -9 yumBackend.py
-		yum -y install perl-DBD-MySQL
+		yum -y install perl-DBD-MySQL --skip-broken
 	fi
 
-	rpm -ivh /usr/src/webmin-1.831-1.noarch.rpm
+	rpm -ivh /usr/src/webmin-1.955-1.noarch.rpm
 	systemctl start webmin
 	firewall-cmd --permanent --zone=public --add-service=wbem-https
 	firewall-cmd --permanent --zone=public --add-service=https
@@ -477,9 +489,13 @@ installHttp()
 	clear
 	echo "Instalando Http e PHP"
 	sleep 2
+
+	yum install -y oracle-php-release-el7
+	yum-config-manager --disable ol7_developer_php74
+	yum-config-manager --enable ol7_developer_php72
 	
-	yum install -y httpd php  php-gd php-pear php-gettext php-pdo php-xml php-common  php-mbstring php-bcmath
-	yum --enablerepo=ol7_optional_latest install -y php-mbstring php-bcmath
+	yum install -y httpd php  php-pgsql php-gd php-pear php-fpm php-gettext php-pdo php-xml php-common php-json php-ldap php-mysql php-mbstring php-bcmath --skip-broken
+	yum --enablerepo=ol7_optional_latest install -y php-mbstring php-bcmath --skip-broken
 	systemctl start httpd.service
 	systemctl enable httpd.service
 	firewall-cmd --permanent --zone=public --add-service=http
@@ -509,7 +525,7 @@ installBaculum()
 
 	mkdir /etc/bacula/confapi
 	chown apache:apache /etc/bacula/confapi
-	chmod 777 etc/bacula/confapi
+	chmod 777 /etc/bacula/confapi
 	sed -i "s/memory_limit = 128M/memory_limit = 256M/g" /etc/php.ini
 
 	senhaBaculum=$(whiptail --title "${TITULO}" --backtitle "${BANNER}" --passwordbox "Informe uma senha para o usuário admin do baculum: " --fb 10 50 3>&1 1>&2 2>&3)
@@ -547,16 +563,12 @@ installBaculum()
   Configurar a API primeiro e depois a aplicação
   API
   url: http://$ipserver:9096
-
   Aplicação
   url: http://$ipserver:9095
-  
-
   Dados Iniciais
   Usuário: admin
   Senha: $senhaBaculum 
-
-	"  --fb 20 50	
+"  --fb 23 60	
 	
 }
 
@@ -570,7 +582,7 @@ installWebacula()
 	installHttp
 	
 	verificaPacote /usr/src/master.zip https://github.com/wanderleihuttel/webacula/archive/master.zip
-	yum -y install unzip 
+	yum -y install unzip --skip-broken
 	unzip /usr/src/master.zip -d /usr/src
 	cp -r /usr/src/webacula-master/ /var/www/html/webacula
 	chown apache:apache -R /var/www/html/
@@ -585,6 +597,11 @@ installWebacula()
 		systemctl restart postgresql.service
 		cd /var/www/html/webacula/install/PostgreSql/
 
+		sed -n '/^db_user/d' /var/www/html/webacula/install/PostgreSql/10_make_tables.sh
+		sed -n '/^db_user/d' /var/www/html/webacula/install/PostgreSql/20_acl_make_tables.sh
+
+
+		sed -i ''
 		sed -i '/./ s/..\/db.conf/\/var\/www\/html\/webacula\/install\/db.conf/g'  /var/www/html/webacula/install/PostgreSql/10_make_tables.sh
 		sed -i '/./ s/..\/db.conf/\/var\/www\/html\/webacula\/install\/db.conf/g'  /var/www/html/webacula/install/PostgreSql/20_acl_make_tables.sh
 		su -c "./10_make_tables.sh" postgres 
@@ -654,9 +671,11 @@ installBaculaWeb()
 	sleep 2
 
 	installHttp
-	verificaPacote /usr/src/bacula-web-7.4.0.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/7.4.0/bacula-web-7.4.0.tgz 
+
+	#verificaPacote /usr/src/bacula-web-7.4.0.tgz http://www.bacula-web.org/files/bacula-web.org/downloads/7.4.0/bacula-web-7.4.0.tgz 
+	verificaPacote /usr/src/bacula-web-8.4.0.tgz http://www.github.com/bacula-web/bacula-web/releases/download/v8.4.0/bacula-web-8.4.0.tgz
 	mkdir /var/www/html/bacula-web
-	tar -xzf /usr/src/bacula-web-7.4.0.tgz -C /var/www/html/bacula-web
+	tar -xzf /usr/src/bacula-web-8.4.0.tgz -C /var/www/html/
 	chown -Rv apache: /var/www/html/bacula-web
 	sleep 5
 	
@@ -728,7 +747,7 @@ installClient ()
 	echo "Instalando Pacotes ..."
 	sleep 1
 	killall -9 yumBackend.py
-	yum -y install gcc-c++ lzo lzo-devel libacl-devel
+	yum -y install gcc-c++ lzo lzo-devel libacl-devel --skip-broken
 	
 	# Efetuar o download do source do bacula e preparar para instalação
 	wget -P /usr/src https://sourceforge.net/projects/bacula/files/bacula/${versaoBacula}/bacula-${versaoBacula}.tar.gz
@@ -833,7 +852,7 @@ infoFinal ()
 
 clear
 killall -9 yumBackend.py
-yum -y install wget
+yum -y install wget --skip-broken
 [ ! -e /usr/bin/whiptail ] && { installWhiptail; }
 
 selecionaBD
